@@ -2,24 +2,19 @@
 
 namespace Runtime
 {
-    public sealed class CameraMover : MonoBehaviour, IStartListener
+    public sealed class CameraMover : MonoBehaviour
     {
-        private Transform _player;
-
         [SerializeField]
         private Camera cam;
         [SerializeField]
         private Vector3 padding;
-
-        public void GameStart(LevelState state)
-        {
-            _player = state.Player.transform;
-        }
+        [SerializeField]
+        private Transform target;
 
         private void Update()
         {
-            cam.transform.position = _player.position + padding;
-            cam.transform.LookAt(_player);
+            cam.transform.position = target.position + padding;
+            cam.transform.LookAt(target);
         }
     }
 }

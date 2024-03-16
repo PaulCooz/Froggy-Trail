@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Threading;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Random = UnityEngine.Random;
@@ -7,10 +8,10 @@ namespace Runtime
 {
     public sealed class InputListener : MonoBehaviour, IStartListener
     {
-        private Coroutine _clickingRoutine;
+        private CancellationTokenSource _cancelSource;
 
         [SerializeField]
-        private GamePipeline gamePipeline;
+        private GameLoop gameLoop;
         [SerializeField]
         private InputAction pressAction;
 
@@ -24,26 +25,31 @@ namespace Runtime
                 _span   = 0;
                 _length = Random.Range(0.5f, 1.5f);
 
-                _clickingRoutine = StartCoroutine(ClickingRoutine());
+                ClickingRoutine().Forget();
             };
             pressAction.canceled += _ =>
             {
-                StopCoroutine(_clickingRoutine);
+                _cancelSource.Cancel();
 
-                gamePipeline.InvokeJumpInput(Mathf.Clamp01(_span / _length));
+                gameLoop.InvokeJumpInput(Mathf.Clamp01(_span / _length));
             };
         }
 
-        private IEnumerator<WaitForSeconds> ClickingRoutine()
+        private async UniTask ClickingRoutine()
         {
+            _cancelSource = new CancellationTokenSource();
             while (isActiveAndEnabled)
             {
-                gamePipeline.InvokeChargingJumpInput(Mathf.Clamp01(_span / _length));
+                gameLoop.InvokeChargingJumpInput(Mathf.Clamp01(_span / _length));
 
-                yield return null;
+                await UniTask.NextFrame();
+
+                if (_cancelSource.IsCancellationRequested)
+                    return;
 
                 _span += Time.deltaTime;
             }
+            _cancelSource.Dispose();
         }
 
         private void OnEnable()

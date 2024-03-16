@@ -4,29 +4,33 @@ using UnityEngine;
 
 namespace Runtime
 {
-    public sealed class GamePipeline : MonoBehaviour
+    public sealed class GameLoop : MonoBehaviour
     {
         [SerializeField]
         private Transform contentTransform;
         [SerializeField]
-        private Frog frogPrefab;
+        private Frog frog;
 
-        private FrogFactory _frogFactory;
-        private bool        _enableInput;
+        private bool _enableInput;
 
         public event Action<float> OnChargingJumpInput;
         public event Action<float> OnJumpInput;
         public event Action        OnJumpDone;
         public event Action        OnGameOver;
 
-        private void Start()
+        private void Awake()
+        {
+            frog.SubscribeToEvents();
+            Setup();
+        }
+
+        private void Setup()
         {
             var trailMaker = new Trail(0);
 
-            _frogFactory = new FrogFactory(frogPrefab, contentTransform, this, trailMaker);
-            var player = _frogFactory.Get();
+            frog.SetTrail(trailMaker);
 
-            var level = new LevelState(trailMaker, player);
+            var level = new LevelState(trailMaker, frog);
             foreach (IStartListener listener in FindObjectsOfType<MonoBehaviour>(true).Where(mb => mb is IStartListener))
             {
                 listener.GameStart(level);
@@ -37,13 +41,7 @@ namespace Runtime
 
         public void Restart()
         {
-            _frogFactory.Clear();
-            foreach (Transform item in contentTransform)
-            {
-                Destroy(item.gameObject);
-            }
-
-            Start();
+            Setup();
         }
 
         public void InvokeChargingJumpInput(float force)

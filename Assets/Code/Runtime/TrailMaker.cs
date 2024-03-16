@@ -1,12 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace Runtime
 {
     public sealed class TrailMaker : MonoBehaviour, IStartListener
     {
+        private FloorCellFactory _floorCellFactory;
+
         [SerializeField]
-        private GamePipeline gamePipeline;
+        private GameLoop gameLoop;
         [SerializeField]
         private FloorCell cellPrefab;
         [SerializeField]
@@ -16,26 +18,33 @@ namespace Runtime
 
         public void GameStart(LevelState state)
         {
-            gamePipeline.OnJumpInput += _ => _playerMoved = true;
+            gameLoop.OnJumpInput += _ => _playerMoved = true;
+            gameLoop.OnGameOver  += OnGameOver;
 
-            StartCoroutine(MakeTrail(state.Trail));
+            _floorCellFactory = new FloorCellFactory(cellPrefab, contentTransform);
+
+            MakeTrail(state.Trail).Forget();
         }
 
-        private IEnumerator<CustomYieldInstruction> MakeTrail(Trail trail)
+        private async UniTask MakeTrail(Trail trail)
         {
-            var floorCellFactory = new FloorCellFactory(cellPrefab, contentTransform);
-            var startCells       = 3;
+            var startCells = 3;
             foreach (var pos in trail)
             {
-                var cell = floorCellFactory.Get();
+                var cell = _floorCellFactory.Get();
                 cell.transform.position = pos;
 
                 _playerMoved = false;
                 if (--startCells > 0)
                     continue;
 
-                yield return new WaitWhile(() => !_playerMoved);
+                await UniTask.WaitWhile(() => !_playerMoved);
             }
+        }
+
+        private void OnGameOver()
+        {
+            _floorCellFactory.DestroyAll();
         }
     }
 }

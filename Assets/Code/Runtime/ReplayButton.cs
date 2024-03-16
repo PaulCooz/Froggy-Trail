@@ -6,13 +6,13 @@ namespace Runtime
     public sealed class ReplayButton : MonoBehaviour, IStartListener
     {
         [SerializeField]
-        private GamePipeline gamePipeline;
+        private GameLoop gameLoop;
         [SerializeField]
         private Button button;
 
         public void GameStart(LevelState state)
         {
-            gamePipeline.OnGameOver += Show;
+            gameLoop.OnGameOver += Show;
         }
 
         public void Show()
@@ -23,7 +23,7 @@ namespace Runtime
         public void Restart()
         {
             button.gameObject.SetActive(false);
-            gamePipeline.Restart();
+            gameLoop.Restart();
         }
     }
 }

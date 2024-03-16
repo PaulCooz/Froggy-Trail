@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace Runtime
 {
-    public sealed class Frog : MonoBehaviour, IDisposable
+    public sealed class Frog : MonoBehaviour
     {
         [SerializeField]
         private float maxJumpDist;
@@ -15,28 +15,24 @@ namespace Runtime
         private float jumpHeight;
         [SerializeField]
         private LineRenderer lineRenderer;
+        [SerializeField]
+        private GameLoop gameLoop;
 
-        private Trail        _trail;
-        private GamePipeline _gamePipeline;
+        private Trail _trail;
 
-        public void Setup(GamePipeline gamePipeline, Trail trail)
+        public void SubscribeToEvents()
         {
-            _gamePipeline = gamePipeline;
+            gameLoop.OnChargingJumpInput += UpdateNextPos;
+            gameLoop.OnJumpInput         += SetNextPos;
+        }
 
+        public void SetTrail(Trail trail)
+        {
             _trail = trail;
             var pos = _trail.First();
             pos.y += 1;
 
             transform.position = pos;
-
-            _gamePipeline.OnChargingJumpInput += UpdateNextPos;
-            _gamePipeline.OnJumpInput         += SetNextPos;
-        }
-
-        public void Dispose()
-        {
-            _gamePipeline.OnChargingJumpInput -= UpdateNextPos;
-            _gamePipeline.OnJumpInput         -= SetNextPos;
         }
 
         private void UpdateNextPos(float force)
@@ -50,9 +46,10 @@ namespace Runtime
             const int points = 10;
             for (var i = 0; i < points; i++)
             {
-                var t   = i / (points - 1f);
-                var pos = Vector3.Lerp(start, end, t);
-                pos.y = start.y + jumpHeight * jumpCurve.Evaluate(t);
+                var t      = i / (points - 1f);
+                var pos    = Vector3.Lerp(start, end, t);
+                var height = force * jumpHeight;
+                pos.y = start.y + height * jumpCurve.Evaluate(t);
                 positions.Add(pos);
             }
 
@@ -62,10 +59,10 @@ namespace Runtime
 
         private void SetNextPos(float force)
         {
-            StartCoroutine(MoveRoutine(force));
+            MoveAsync(force).Forget();
         }
 
-        private IEnumerator<YieldInstruction> MoveRoutine(float force)
+        private async UniTaskVoid MoveAsync(float force)
         {
             var startPos = transform.position;
 
@@ -80,7 +77,7 @@ namespace Runtime
 
                 transform.position = pos;
 
-                yield return null;
+                await UniTask.NextFrame();
 
                 t += Time.deltaTime;
             }
@@ -108,13 +105,15 @@ namespace Runtime
             }
 
             if (transform.position.x - left.x >= 1 && right.x - transform.position.x >= 1)
-            {
-                _gamePipeline.InvokeGameOver();
-            }
+                gameLoop.InvokeGameOver();
             else
-            {
-                _gamePipeline.InvokeJumpDone();
-            }
+                gameLoop.InvokeJumpDone();
+        }
+
+        public void OnDestroy()
+        {
+            gameLoop.OnChargingJumpInput -= UpdateNextPos;
+            gameLoop.OnJumpInput         -= SetNextPos;
         }
     }
 }

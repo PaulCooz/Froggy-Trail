@@ -129,7 +129,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 80452366c0784752b41e4461398b43d1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxJumpDist: 5
+  maxJumpDist: 6
   jumpCurve:
     serializedVersion: 2
     m_Curve:
@@ -165,6 +165,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   jumpHeight: 1
   lineRenderer: {fileID: 2947844629326175006}
+  gameLoop: {fileID: 0}
 --- !u!1 &6086664548351535217
 GameObject:
   m_ObjectHideFlags: 0
