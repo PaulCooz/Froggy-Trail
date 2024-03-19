@@ -16,14 +16,14 @@ namespace Runtime
         private InputAction pressAction;
 
         private float _span;
-        private float _length;
+        private float _maxDuration;
 
         public void GameStart(LevelState state)
         {
             pressAction.started += _ =>
             {
-                _span   = 0;
-                _length = Random.Range(0.5f, 1.5f);
+                _span        = 0;
+                _maxDuration = Random.Range(0.25f, 1.25f);
 
                 ClickingRoutine().Forget();
             };
@@ -31,7 +31,7 @@ namespace Runtime
             {
                 _cancelSource.Cancel();
 
-                gameLoop.InvokeJumpInput(Mathf.Clamp01(_span / _length));
+                gameLoop.InvokeJumpInput(Mathf.Clamp01(_span / _maxDuration));
             };
         }
 
@@ -40,7 +40,7 @@ namespace Runtime
             _cancelSource = new CancellationTokenSource();
             while (isActiveAndEnabled)
             {
-                gameLoop.InvokeChargingJumpInput(Mathf.Clamp01(_span / _length));
+                gameLoop.InvokeChargingJumpInput(Mathf.Clamp01(_span / _maxDuration));
 
                 await UniTask.NextFrame();
 

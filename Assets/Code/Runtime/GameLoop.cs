@@ -7,11 +7,10 @@ namespace Runtime
     public sealed class GameLoop : MonoBehaviour
     {
         [SerializeField]
-        private Transform contentTransform;
-        [SerializeField]
         private Frog frog;
 
-        private bool _enableInput;
+        private LevelState _state;
+        private bool       _enableInput;
 
         public event Action<float> OnChargingJumpInput;
         public event Action<float> OnJumpInput;
@@ -28,12 +27,11 @@ namespace Runtime
         {
             var trailMaker = new Trail(0);
 
-            frog.SetTrail(trailMaker);
-
-            var level = new LevelState(trailMaker, frog);
-            foreach (IStartListener listener in FindObjectsOfType<MonoBehaviour>(true).Where(mb => mb is IStartListener))
+            _state = new LevelState(trailMaker, frog);
+            var startListeners = FindObjectsOfType<MonoBehaviour>(true).OfType<IStartListener>();
+            foreach (var listener in startListeners)
             {
-                listener.GameStart(level);
+                listener.GameStart(_state);
             }
 
             _enableInput = true;
@@ -67,6 +65,7 @@ namespace Runtime
 
         public void InvokeGameOver()
         {
+            _state.Trail.Dispose();
             OnGameOver?.Invoke();
         }
     }

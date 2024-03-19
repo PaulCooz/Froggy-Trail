@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Runtime
 {
-    public sealed class Frog : MonoBehaviour
+    public sealed class Frog : MonoBehaviour, IStartListener
     {
         [SerializeField]
         private float maxJumpDist;
@@ -26,9 +26,9 @@ namespace Runtime
             gameLoop.OnJumpInput         += SetNextPos;
         }
 
-        public void SetTrail(Trail trail)
+        public void GameStart(LevelState state)
         {
-            _trail = trail;
+            _trail = state.Trail;
             var pos = _trail.First();
             pos.y += 1;
 
@@ -54,11 +54,13 @@ namespace Runtime
             }
 
             lineRenderer.positionCount = positions.Count;
+            lineRenderer.SetAlpha(1);
             lineRenderer.SetPositions(positions.ToArray());
         }
 
         private void SetNextPos(float force)
         {
+            lineRenderer.TurnAlpha(0, 0.3f).Forget();
             MoveAsync(force).Forget();
         }
 
@@ -77,7 +79,7 @@ namespace Runtime
 
                 transform.position = pos;
 
-                await UniTask.NextFrame();
+                await UniTask.NextFrame(); // TODO stop on game over
 
                 t += Time.deltaTime;
             }
@@ -104,7 +106,8 @@ namespace Runtime
                     break;
             }
 
-            if (transform.position.x - left.x >= 1 && right.x - transform.position.x >= 1)
+            const float cellSizeX = Trail.CellSize;
+            if (transform.position.x - left.x >= cellSizeX && right.x - transform.position.x >= cellSizeX)
                 gameLoop.InvokeGameOver();
             else
                 gameLoop.InvokeJumpDone();
