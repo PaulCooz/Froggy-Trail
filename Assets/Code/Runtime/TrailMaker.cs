@@ -1,19 +1,22 @@
-﻿using Cysharp.Threading.Tasks;
+﻿using System;
+using System.Linq;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace Runtime
 {
     public sealed class TrailMaker : MonoBehaviour, IStartListener
     {
-        private FloorCellFactory _floorCellFactory;
-
         [SerializeField]
         private GameLoop gameLoop;
         [SerializeField]
         private FloorCell cellPrefab;
         [SerializeField]
         private Transform contentTransform;
+        [SerializeField]
+        private float minChangeDist;
 
+        private FloorCellFactory _floorCellFactory;
         private bool _playerMoved;
 
         public void GameStart(LevelState state)
@@ -23,23 +26,36 @@ namespace Runtime
 
             _floorCellFactory = new FloorCellFactory(cellPrefab, contentTransform);
 
-            MakeTrail(state.Trail).Forget();
+            MakeTrail(state.Trail, () => state.Player.transform.position).Forget();
         }
 
-        private async UniTask MakeTrail(Trail trail)
+        private async UniTask MakeTrail(Trail trail, Func<Vector3> currPosGetter)
         {
-            var startCells = 3;
             foreach (var pos in trail)
             {
                 var cell = _floorCellFactory.Get();
                 cell.transform.position = pos;
 
-                _playerMoved = false;
-                if (--startCells > 0)
+                if (Vector3.Distance(currPosGetter(), pos) < minChangeDist)
                     continue;
 
-                await UniTask.WaitWhile(() => !_playerMoved);
+                _playerMoved = false;
+                await UniTask.WaitWhile(() => !_playerMoved, cancellationToken: gameLoop.RunLoopToken);
+                if (gameLoop.RunLoopToken.IsCancellationRequested)
+                    return;
+
+                DestroyDistant(currPosGetter());
             }
+        }
+
+        private void DestroyDistant(Vector3 current)
+        {
+            var distant = _floorCellFactory.Spawned
+                .Where(cell => current.x - cell.transform.position.x >= minChangeDist)
+                .ToArray();
+
+            foreach (var cell in distant)
+                _floorCellFactory.Destroy(cell);
         }
 
         private void OnGameOver()

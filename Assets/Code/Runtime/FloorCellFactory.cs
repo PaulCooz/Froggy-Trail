@@ -5,29 +5,35 @@ namespace Runtime
 {
     public sealed class FloorCellFactory
     {
-        private readonly FloorCell       _prefab;
-        private readonly Transform       _parent;
-        private readonly List<FloorCell> _cells;
+        private readonly FloorCell _prefab;
+        private readonly Transform _parent;
+
+        public List<FloorCell> Spawned { get; private set; }
 
         public FloorCellFactory(FloorCell prefab, Transform parent)
         {
             _prefab = prefab;
             _parent = parent;
-            _cells  = new List<FloorCell>();
+            Spawned = new List<FloorCell>();
         }
 
         public FloorCell Get()
         {
             var cell = Object.Instantiate(_prefab, _parent);
-            _cells.Add(cell);
+            Spawned.Add(cell);
             return cell;
+        }
+
+        public void Destroy(FloorCell cell)
+        {
+            Spawned.Remove(cell);
+            Object.Destroy(cell.gameObject);
         }
 
         public void DestroyAll()
         {
-            foreach (var cell in _cells)
-                Object.Destroy(cell.gameObject);
-            _cells.Clear();
+            foreach (var cell in Spawned.ToArray())
+                Destroy(cell);
         }
     }
 }

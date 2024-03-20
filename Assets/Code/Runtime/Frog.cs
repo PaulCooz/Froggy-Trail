@@ -20,6 +20,8 @@ namespace Runtime
 
         private Trail _trail;
 
+        int IStartListener.Order => -1;
+
         public void SubscribeToEvents()
         {
             gameLoop.OnChargingJumpInput += UpdateNextPos;
@@ -77,40 +79,21 @@ namespace Runtime
                 var pos = Vector3.Lerp(startPos, endPos, t);
                 pos.y = startPos.y + jumpHeight * jumpCurve.Evaluate(t);
 
+                if (transform is null || !transform)
+                {
+                    Debug.Log(gameLoop.RunLoopToken.IsCancellationRequested);
+                    Debug.Log(gameLoop.RunLoopToken.CanBeCanceled);
+                    Debug.Log(gameLoop.RunLoopToken.ToString());
+                }
                 transform.position = pos;
 
-                await UniTask.NextFrame(); // TODO stop on game over
+                await UniTask.NextFrame(gameLoop.RunLoopToken);
 
                 t += Time.deltaTime;
             }
 
             transform.position = endPos;
-            CheckGameOver();
-        }
-
-        private void CheckGameOver()
-        {
-            var left = _trail.First();
-            foreach (var t in _trail)
-            {
-                if (t.x > transform.position.x)
-                    break;
-                left = t;
-            }
-
-            var right = _trail.First();
-            foreach (var t in _trail)
-            {
-                right = t;
-                if (t.x >= transform.position.x)
-                    break;
-            }
-
-            const float cellSizeX = Trail.CellSize;
-            if (transform.position.x - left.x >= cellSizeX && right.x - transform.position.x >= cellSizeX)
-                gameLoop.InvokeGameOver();
-            else
-                gameLoop.InvokeJumpDone();
+            gameLoop.CheckGameOver();
         }
 
         public void OnDestroy()

@@ -333,6 +333,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   frog: {fileID: 1973829744}
+  minMaxInputDuration: {x: 0.5, y: 1.5}
+  cellSize: 2.7
 --- !u!4 &676102461 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2003332516028591900, guid: a1aff83441c488f4ea499a0560181f5c,
@@ -845,6 +847,7 @@ MonoBehaviour:
   cellPrefab: {fileID: 171011379391354691, guid: cd56b9c2577a3e346968c5109c706b29,
     type: 3}
   contentTransform: {fileID: 621793509}
+  minChangeDist: 30
 --- !u!1 &1940828555
 GameObject:
   m_ObjectHideFlags: 0

@@ -7,15 +7,15 @@ namespace Runtime
 {
     public sealed class Trail : IEnumerable<Vector3>, IDisposable
     {
-        public const float CellSize = 2.7f;
-
-        private readonly int _seed;
+        private readonly int   _seed;
+        private readonly float _cellSize;
 
         private bool _disposed;
 
-        public Trail(int seed)
+        public Trail(float cellSize, int seed)
         {
             _seed     = seed;
+            _cellSize = cellSize;
             _disposed = false;
         }
 
@@ -27,15 +27,12 @@ namespace Runtime
             {
                 yield return current;
 
-                current += new Vector3(CellSize * rand.Next(2, 6), 0, 0);
+                current += new Vector3(_cellSize * rand.Next(2, 6), 0, 0);
             }
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        public void Dispose()
-        {
-            _disposed = true;
-        }
+        public void Dispose() => _disposed = true;
     }
 }

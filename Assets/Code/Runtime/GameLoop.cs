@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using UnityEngine;
 
 namespace Runtime
@@ -8,9 +9,17 @@ namespace Runtime
     {
         [SerializeField]
         private Frog frog;
+        [SerializeField]
+        private Vector2 minMaxInputDuration;
+        [SerializeField]
+        private float cellSize = 2.7f;
 
         private LevelState _state;
         private bool       _enableInput;
+
+        private CancellationTokenSource _loopCancellation;
+
+        public CancellationToken RunLoopToken => _loopCancellation.Token;
 
         public event Action<float> OnChargingJumpInput;
         public event Action<float> OnJumpInput;
@@ -25,16 +34,29 @@ namespace Runtime
 
         private void Setup()
         {
-            var trailMaker = new Trail(0);
+            _loopCancellation = new CancellationTokenSource();
 
-            _state = new LevelState(trailMaker, frog);
-            var startListeners = FindObjectsOfType<MonoBehaviour>(true).OfType<IStartListener>();
+            var trailMaker = new Trail(cellSize, 0);
+            _state = new LevelState(trailMaker, frog, minMaxInputDuration);
+            var startListeners = FindObjectsOfType<MonoBehaviour>(true).OfType<IStartListener>().ToList();
+            startListeners.Sort((a, b) => a.Order.CompareTo(b.Order));
             foreach (var listener in startListeners)
-            {
                 listener.GameStart(_state);
-            }
 
             _enableInput = true;
+        }
+
+        public void CheckGameOver()
+        {
+            var pos   = _state.Player.transform.position;
+            var left  = _state.FindLeftCellPos();
+            var right = _state.FindRightCellPos();
+
+            var notOnCell = pos.x - left.x >= cellSize && right.x - pos.x >= cellSize;
+            if (notOnCell)
+                InvokeGameOver();
+            else
+                InvokeJumpDone();
         }
 
         public void Restart()
@@ -57,14 +79,18 @@ namespace Runtime
             OnJumpInput?.Invoke(force);
         }
 
-        public void InvokeJumpDone()
+        private void InvokeJumpDone()
         {
             OnJumpDone?.Invoke();
             _enableInput = true;
         }
 
-        public void InvokeGameOver()
+        private void InvokeGameOver()
         {
+            _loopCancellation.Cancel();
+            _loopCancellation.Dispose();
+            _loopCancellation = null;
+
             _state.Trail.Dispose();
             OnGameOver?.Invoke();
         }

@@ -23,7 +23,7 @@ namespace Runtime
             pressAction.started += _ =>
             {
                 _span        = 0;
-                _maxDuration = Random.Range(0.25f, 1.25f);
+                _maxDuration = Random.Range(state.MinMaxInputDuration.x, state.MinMaxInputDuration.y);
 
                 ClickingRoutine().Forget();
             };
