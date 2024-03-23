@@ -79,12 +79,6 @@ namespace Runtime
                 var pos = Vector3.Lerp(startPos, endPos, t);
                 pos.y = startPos.y + jumpHeight * jumpCurve.Evaluate(t);
 
-                if (transform is null || !transform)
-                {
-                    Debug.Log(gameLoop.RunLoopToken.IsCancellationRequested);
-                    Debug.Log(gameLoop.RunLoopToken.CanBeCanceled);
-                    Debug.Log(gameLoop.RunLoopToken.ToString());
-                }
                 transform.position = pos;
 
                 await UniTask.NextFrame(gameLoop.RunLoopToken);

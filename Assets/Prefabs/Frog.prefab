@@ -129,19 +129,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 80452366c0784752b41e4461398b43d1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxJumpDist: 6
+  maxJumpDist: 20
   jumpCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
       time: 0
       value: 0
-      inSlope: 2
-      outSlope: 2
+      inSlope: 3.9829233
+      outSlope: 3.9829233
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0
-      outWeight: 0
+      inWeight: 0.33333334
+      outWeight: 0.50119716
     - serializedVersion: 3
       time: 0.5
       value: 1
@@ -149,21 +149,21 @@ MonoBehaviour:
       outSlope: 0
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.11252928
+      inWeight: 0.35077113
+      outWeight: 0.10454917
     - serializedVersion: 3
       time: 1
       value: 0
-      inSlope: 0
-      outSlope: 0
+      inSlope: -3.9927738
+      outSlope: -3.9927738
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0
+      inWeight: 0.5027933
       outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  jumpHeight: 1
+  jumpHeight: 4
   lineRenderer: {fileID: 2947844629326175006}
   gameLoop: {fileID: 0}
 --- !u!1 &6086664548351535217

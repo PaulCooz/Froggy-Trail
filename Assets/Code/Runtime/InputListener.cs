@@ -1,6 +1,4 @@
-﻿using System.Threading;
-using Cysharp.Threading.Tasks;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.InputSystem;
 using Random = UnityEngine.Random;
 
@@ -8,8 +6,6 @@ namespace Runtime
 {
     public sealed class InputListener : MonoBehaviour, IStartListener
     {
-        private CancellationTokenSource _cancelSource;
-
         [SerializeField]
         private GameLoop gameLoop;
         [SerializeField]
@@ -17,6 +13,7 @@ namespace Runtime
 
         private float _span;
         private float _maxDuration;
+        private bool  _pressing;
 
         public void GameStart(LevelState state)
         {
@@ -25,31 +22,23 @@ namespace Runtime
                 _span        = 0;
                 _maxDuration = Random.Range(state.MinMaxInputDuration.x, state.MinMaxInputDuration.y);
 
-                ClickingRoutine().Forget();
+                _pressing = true;
             };
             pressAction.canceled += _ =>
             {
-                _cancelSource.Cancel();
+                _pressing = false;
 
                 gameLoop.InvokeJumpInput(Mathf.Clamp01(_span / _maxDuration));
             };
         }
 
-        private async UniTask ClickingRoutine()
+        private void Update()
         {
-            _cancelSource = new CancellationTokenSource();
-            while (isActiveAndEnabled)
+            if (_pressing)
             {
                 gameLoop.InvokeChargingJumpInput(Mathf.Clamp01(_span / _maxDuration));
-
-                await UniTask.NextFrame();
-
-                if (_cancelSource.IsCancellationRequested)
-                    return;
-
                 _span += Time.deltaTime;
             }
-            _cancelSource.Dispose();
         }
 
         private void OnEnable()

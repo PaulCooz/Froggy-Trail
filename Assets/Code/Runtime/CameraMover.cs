@@ -2,7 +2,7 @@
 
 namespace Runtime
 {
-    public sealed class CameraMover : MonoBehaviour
+    public sealed class CameraMover : MonoBehaviour, ISerializationCallbackReceiver
     {
         [SerializeField]
         private Camera cam;
@@ -16,5 +16,13 @@ namespace Runtime
             cam.transform.position = target.position + padding;
             cam.transform.LookAt(target);
         }
+
+        void ISerializationCallbackReceiver.OnBeforeSerialize()
+        {
+            if (cam && target)
+                Update();
+        }
+
+        void ISerializationCallbackReceiver.OnAfterDeserialize() { }
     }
 }

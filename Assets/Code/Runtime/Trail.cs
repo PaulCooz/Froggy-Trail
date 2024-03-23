@@ -27,7 +27,7 @@ namespace Runtime
             {
                 yield return current;
 
-                current += new Vector3(_cellSize * rand.Next(2, 6), 0, 0);
+                current += new Vector3(_cellSize * rand.Next(2, 9), 0, 0);
             }
         }
 
