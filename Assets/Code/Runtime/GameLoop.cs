@@ -37,7 +37,7 @@ namespace Runtime
             _loopCancellation = new CancellationTokenSource();
 
             var trailMaker = new Trail(cellSize, 0);
-            _state = new LevelState(trailMaker, frog, minMaxInputDuration);
+            _state = new LevelState(cellSize, trailMaker, frog, minMaxInputDuration);
             var startListeners = FindObjectsOfType<MonoBehaviour>(true).OfType<IStartListener>().ToList();
             startListeners.Sort((a, b) => a.Order.CompareTo(b.Order));
             foreach (var listener in startListeners)
@@ -48,12 +48,9 @@ namespace Runtime
 
         public void CheckGameOver()
         {
-            var pos   = _state.Player.transform.position;
-            var left  = _state.FindLeftCellPos();
-            var right = _state.FindRightCellPos();
-
-            var notOnCell = pos.x - left.x >= cellSize && right.x - pos.x >= cellSize;
-            if (notOnCell)
+            var playerPos   = _state.Player.transform.position;
+            var isNotOnCell = _state.IsNotOnCell(playerPos);
+            if (isNotOnCell)
                 InvokeGameOver();
             else
                 InvokeJumpDone();

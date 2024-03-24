@@ -18,7 +18,8 @@ namespace Runtime
         [SerializeField]
         private GameLoop gameLoop;
 
-        private Trail _trail;
+        private Trail      _trail;
+        private LevelState _state;
 
         int IStartListener.Order => -1;
 
@@ -30,7 +31,8 @@ namespace Runtime
 
         public void GameStart(LevelState state)
         {
-            _trail = state.Trail;
+            _state = state;
+            _trail = _state.Trail;
             var pos = _trail.First();
             pos.y += 1;
 
@@ -48,16 +50,34 @@ namespace Runtime
             const int points = 10;
             for (var i = 0; i < points; i++)
             {
-                var t      = i / (points - 1f);
-                var pos    = Vector3.Lerp(start, end, t);
-                var height = force * jumpHeight;
-                pos.y = start.y + height * jumpCurve.Evaluate(t);
+                var t   = i / (points - 1f);
+                var pos = GetArcPos(force, start, end, t);
                 positions.Add(pos);
             }
+
+            if (_state.IsNotOnCell(end))
+                AddFallRay(force, start, end, positions);
 
             lineRenderer.positionCount = positions.Count;
             lineRenderer.SetAlpha(1);
             lineRenderer.SetPositions(positions.ToArray());
+        }
+
+        private void AddFallRay(float force, Vector3 start, Vector3 end, ICollection<Vector3> positions)
+        {
+            var last = GetArcPos(force, start, end, 1);
+            var prev = GetArcPos(force, start, end, 0.99f);
+            var ray  = new Ray(last, last - prev);
+            positions.Add(ray.GetPoint(0));
+            positions.Add(ray.GetPoint(100));
+        }
+
+        private Vector3 GetArcPos(float force, Vector3 start, Vector3 end, float t)
+        {
+            var pos    = Vector3.Lerp(start, end, t);
+            var height = force * jumpHeight;
+            pos.y = start.y + height * jumpCurve.Evaluate(t);
+            return pos;
         }
 
         private void SetNextPos(float force)
