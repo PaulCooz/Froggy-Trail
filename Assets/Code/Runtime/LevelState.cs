@@ -7,16 +7,20 @@ namespace Runtime
     {
         private readonly float _cellSize;
 
-        public Trail Trail  { get; private set; }
-        public Frog  Player { get; private set; }
+        public int   CellCount { get; private set; }
+        public Trail Trail     { get; private set; }
+        public Frog  Player    { get; private set; }
 
         public Vector2 MinMaxInputDuration { get; private set; }
 
-        public LevelState(float cellSize, Trail trail, Frog player, Vector2 minMaxInputDuration)
+        public LevelState(float cellSize, int count, Trail trail, Frog player, Vector2 minMaxInputDuration)
         {
-            _cellSize           = cellSize;
-            Trail               = trail;
-            Player              = player;
+            _cellSize = cellSize;
+
+            CellCount = count;
+            Trail     = trail;
+            Player    = player;
+
             MinMaxInputDuration = minMaxInputDuration;
         }
 

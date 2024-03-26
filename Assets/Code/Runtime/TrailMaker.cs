@@ -10,31 +10,37 @@ namespace Runtime
         [SerializeField]
         private GameLoop gameLoop;
         [SerializeField]
-        private FloorCell cellPrefab;
+        private Block blockPrefab;
         [SerializeField]
         private Transform contentTransform;
         [SerializeField]
         private float minChangeDist;
 
-        private FloorCellFactory _floorCellFactory;
-        private bool _playerMoved;
+        private BlockFactory _blockFactory;
+
+        private bool       _playerMoved;
+        private LevelState _state;
 
         public void GameStart(LevelState state)
         {
+            _state = state;
+
             gameLoop.OnJumpInput += _ => _playerMoved = true;
             gameLoop.OnGameOver  += OnGameOver;
 
-            _floorCellFactory = new FloorCellFactory(cellPrefab, contentTransform);
+            _blockFactory = new BlockFactory(blockPrefab, contentTransform);
 
-            MakeTrail(state.Trail, () => state.Player.transform.position).Forget();
+            MakeTrail(_state.Trail, () => _state.Player.transform.position).Forget();
         }
 
         private async UniTask MakeTrail(Trail trail, Func<Vector3> currPosGetter)
         {
+            var i = 0;
             foreach (var pos in trail)
             {
-                var cell = _floorCellFactory.Get();
+                var cell = _blockFactory.Get(_state, i == _state.CellCount - 1);
                 cell.transform.position = pos;
+                i++;
 
                 if (Vector3.Distance(currPosGetter(), pos) < minChangeDist)
                     continue;
@@ -50,17 +56,17 @@ namespace Runtime
 
         private void DestroyDistant(Vector3 current)
         {
-            var distant = _floorCellFactory.Spawned
+            var distant = _blockFactory.Spawned
                 .Where(cell => current.x - cell.transform.position.x >= minChangeDist)
                 .ToArray();
 
             foreach (var cell in distant)
-                _floorCellFactory.Destroy(cell);
+                _blockFactory.Destroy(cell);
         }
 
         private void OnGameOver()
         {
-            _floorCellFactory.DestroyAll();
+            _blockFactory.DestroyAll();
         }
     }
 }

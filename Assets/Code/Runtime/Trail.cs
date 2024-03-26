@@ -9,12 +9,14 @@ namespace Runtime
     {
         private readonly int   _seed;
         private readonly float _cellSize;
+        private readonly int   _count;
 
         private bool _disposed;
 
-        public Trail(float cellSize, int seed)
+        public Trail(float cellSize, int count, int seed)
         {
             _seed     = seed;
+            _count    = count;
             _cellSize = cellSize;
             _disposed = false;
         }
@@ -23,7 +25,7 @@ namespace Runtime
         {
             var current = new Vector3(0, 0, 0);
             var rand    = new System.Random(_seed);
-            while (!_disposed)
+            for (var i = 0; i < _count && !_disposed; i++)
             {
                 yield return current;
 

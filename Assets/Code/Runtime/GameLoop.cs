@@ -36,8 +36,10 @@ namespace Runtime
         {
             _loopCancellation = new CancellationTokenSource();
 
-            var trailMaker = new Trail(cellSize, 0);
-            _state = new LevelState(cellSize, trailMaker, frog, minMaxInputDuration);
+            const int maxCount = 5;
+
+            var trailMaker = new Trail(cellSize, maxCount, 0);
+            _state = new LevelState(cellSize, maxCount, trailMaker, frog, minMaxInputDuration);
             var startListeners = FindObjectsOfType<MonoBehaviour>(true).OfType<IStartListener>().ToList();
             startListeners.Sort((a, b) => a.Order.CompareTo(b.Order));
             foreach (var listener in startListeners)
