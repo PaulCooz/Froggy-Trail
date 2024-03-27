@@ -55,7 +55,7 @@ namespace Runtime
                 positions.Add(pos);
             }
 
-            if (_state.IsNotOnCell(end))
+            if (_state.IsBetweenBlocks(end))
                 AddFallRay(force, start, end, positions);
 
             lineRenderer.positionCount = positions.Count;
@@ -107,7 +107,7 @@ namespace Runtime
             }
 
             transform.position = endPos;
-            gameLoop.CheckGameOver();
+            gameLoop.InvokeFrogMoved();
         }
 
         public void OnDestroy()

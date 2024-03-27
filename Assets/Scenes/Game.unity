@@ -829,7 +829,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gameLoop: {fileID: 2084973331}
-  cellPrefab: {fileID: 171011379391354691, guid: cd56b9c2577a3e346968c5109c706b29,
+  blockPrefab: {fileID: 171011379391354691, guid: cd56b9c2577a3e346968c5109c706b29,
     type: 3}
   contentTransform: {fileID: 621793509}
   minChangeDist: 40

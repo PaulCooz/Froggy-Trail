@@ -24,6 +24,7 @@ namespace Runtime
         public event Action<float> OnChargingJumpInput;
         public event Action<float> OnJumpInput;
         public event Action        OnJumpDone;
+        public event Action        OnFrogMoved;
         public event Action        OnGameOver;
 
         private void Awake()
@@ -48,10 +49,16 @@ namespace Runtime
             _enableInput = true;
         }
 
-        public void CheckGameOver()
+        public void InvokeFrogMoved()
+        {
+            OnFrogMoved?.Invoke();
+            CheckGameOver();
+        }
+
+        private void CheckGameOver()
         {
             var playerPos   = _state.Player.transform.position;
-            var isNotOnCell = _state.IsNotOnCell(playerPos);
+            var isNotOnCell = _state.IsBetweenBlocks(playerPos);
             if (isNotOnCell)
                 InvokeGameOver();
             else
@@ -82,6 +89,11 @@ namespace Runtime
         {
             OnJumpDone?.Invoke();
             _enableInput = true;
+        }
+
+        public void InvokeLevelWin()
+        {
+            Debug.Log("you win!");
         }
 
         private void InvokeGameOver()

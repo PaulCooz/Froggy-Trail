@@ -12,18 +12,23 @@ namespace Runtime
         [SerializeField]
         private MeshRenderer meshRenderer;
 
-        public void Setup(LevelState level, ICellHandler handler)
+        public void Setup(GameLoop loop, ICellHandler handler)
         {
             _material             = Instantiate(meshRenderer.material);
             meshRenderer.material = _material;
 
             _handler = handler;
-            _handler.Setup(level, this);
+            _handler.Setup(loop, this);
         }
 
         public void SetColor(Color color)
         {
             _material.SetColor(ColorProp, color);
+        }
+
+        public void FrogMoved(bool isJumpedOnCell)
+        {
+            _handler.FrogMoved(isJumpedOnCell);
         }
     }
 }

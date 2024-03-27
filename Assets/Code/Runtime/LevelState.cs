@@ -24,7 +24,12 @@ namespace Runtime
             MinMaxInputDuration = minMaxInputDuration;
         }
 
-        public bool IsNotOnCell(Vector3 pos)
+        public bool IsFrogTouchBlock(Vector3 blockPos)
+        {
+            return Mathf.Abs(Player.transform.position.x - blockPos.x) < _cellSize;
+        }
+
+        public bool IsBetweenBlocks(Vector3 pos)
         {
             var (left, right) = FindAdjacentPosFromPlayer();
             return pos.x - left.x >= _cellSize && right.x - pos.x >= _cellSize;

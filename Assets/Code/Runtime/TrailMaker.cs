@@ -26,9 +26,10 @@ namespace Runtime
             _state = state;
 
             gameLoop.OnJumpInput += _ => _playerMoved = true;
+            gameLoop.OnFrogMoved += RefreshBlocks;
             gameLoop.OnGameOver  += OnGameOver;
 
-            _blockFactory = new BlockFactory(blockPrefab, contentTransform);
+            _blockFactory = new BlockFactory(gameLoop, blockPrefab, contentTransform);
 
             MakeTrail(_state.Trail, () => _state.Player.transform.position).Forget();
         }
@@ -38,7 +39,7 @@ namespace Runtime
             var i = 0;
             foreach (var pos in trail)
             {
-                var cell = _blockFactory.Get(_state, i == _state.CellCount - 1);
+                var cell = _blockFactory.Get(i == _state.CellCount - 1);
                 cell.transform.position = pos;
                 i++;
 
@@ -62,6 +63,15 @@ namespace Runtime
 
             foreach (var cell in distant)
                 _blockFactory.Destroy(cell);
+        }
+
+        private void RefreshBlocks()
+        {
+            foreach (var block in _blockFactory.Spawned)
+            {
+                var isJumpedOnCell = _state.IsFrogTouchBlock(block.transform.position);
+                block.FrogMoved(isJumpedOnCell);
+            }
         }
 
         private void OnGameOver()

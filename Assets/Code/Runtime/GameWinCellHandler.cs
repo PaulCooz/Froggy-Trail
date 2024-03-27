@@ -4,9 +4,18 @@ namespace Runtime
 {
     public sealed class GameWinCellHandler : ICellHandler
     {
-        public void Setup(LevelState level, Block block)
+        private GameLoop _loop;
+
+        public void Setup(GameLoop loop, Block block)
         {
+            _loop = loop;
             block.SetColor(Color.yellow);
+        }
+
+        public void FrogMoved(bool isJumpedOnCell)
+        {
+            if (isJumpedOnCell)
+                _loop.InvokeLevelWin();
         }
     }
 }
